@@ -61,7 +61,7 @@ class DaggerReflectRenderer(
         val creatorClassName = componentClassName.nestedClass(resultTypeName)
         addFunction(
             FunSpec.builder(name)
-                .returns(componentClassName)
+                .returns(creatorClassName)
                 .addAnnotation(JvmStatic::class.java)
                 .addCode("return %M(%T::class.java)", creator, creatorClassName)
                 .build()
