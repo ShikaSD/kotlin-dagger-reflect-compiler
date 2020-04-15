@@ -9,12 +9,19 @@ import com.squareup.kotlinpoet.MemberName.Companion.member
 import com.squareup.kotlinpoet.TypeSpec
 import dagger.Dagger
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.descriptors.annotations.AnnotationDescriptor
+import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.resolve.constants.ArrayValue
+import org.jetbrains.kotlin.resolve.constants.KClassValue
 import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameSafe
+import org.jetbrains.kotlin.resolve.descriptorUtil.module
+import org.jetbrains.kotlin.types.KotlinType
 import java.io.File
 
 class DaggerReflectRenderer(
     private val outputDir: File,
-    private val component: ClassDescriptor
+    private val component: ClassDescriptor,
+    private val componentAnnotation: AnnotationDescriptor
 ) {
     private val componentClassName = component.fqNameSafe.run { ClassName(parent().asString(), shortName().asString()) }
     private val generatedComponentClassName =
@@ -22,20 +29,28 @@ class DaggerReflectRenderer(
 
     fun generateFactory(factory: ClassDescriptor) =
         file {
-            component {
+            generatedComponent {
                 reflectCreator(FACTORY_FUNCTION_NAME, FACTORY_REFLECT_NAME, factory.name.asString())
             }
         }
 
     fun generateBuilder(builder: ClassDescriptor) =
         file {
-            component {
+            generatedComponent {
                 reflectCreator(BUILDER_FUNCTION_NAME, BUILDER_REFLECT_NAME, builder.name.asString())
             }
         }
 
     fun generateDefaultBuilder() =
-        file { }
+        file {
+            generatedComponent {
+//                copyDaggerAnnotations()
+//                defaultBuilder {
+//                    modules(componentAnnotation)
+//                    dependencies(componentAnnotation)
+//                }
+            }
+        }
 
     private inline fun file(block: FileSpec.Builder.() -> Unit) =
         FileSpec.builder(generatedComponentClassName.packageName, generatedComponentClassName.simpleName)
@@ -43,7 +58,7 @@ class DaggerReflectRenderer(
             .build()
             .writeTo(outputDir)
 
-    private inline fun FileSpec.Builder.component(block: TypeSpec.Builder.() -> Unit) {
+    private inline fun FileSpec.Builder.generatedComponent(block: TypeSpec.Builder.() -> Unit) {
         addType(
             TypeSpec.classBuilder(generatedComponentClassName)
                 .addModifiers(KModifier.ABSTRACT)
@@ -67,6 +82,11 @@ class DaggerReflectRenderer(
                 .build()
         )
     }
+
+    private fun AnnotationDescriptor.classList(name: String): List<KotlinType> =
+        (this.allValueArguments[Name.identifier(name)] as ArrayValue)
+            .value
+            .map { (it as KClassValue).getType(component.module) }
 
     companion object {
         private const val GENERATED_COMPONENT_PREFIX = "Dagger"

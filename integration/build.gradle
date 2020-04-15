@@ -12,10 +12,20 @@ dependencies {
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all { it ->
-    def sourcesDir = new File(buildDir, "kotlin/${it.name}/generated/")
+    if (it instanceof org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask) {
+        return
+    }
+
+    def isTest = it.name.contains("Test")
+
+    def sourcesDir = new File(buildDir, "generated/source/dagger-reflect-plugin/${it.name}/")
     sourcesDir.mkdirs()
 
-    idea.module.sourceDirs += sourcesDir
+    if (isTest) {
+        idea.module.testSourceDirs += sourcesDir
+    } else {
+        idea.module.sourceDirs += sourcesDir
+    }
     idea.module.generatedSourceDirs += sourcesDir
 
     kotlinOptions {

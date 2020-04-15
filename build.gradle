@@ -13,7 +13,9 @@ buildscript {
         ],
         'kotlin': [
             'stdlib': "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
-            'compiler': "org.jetbrains.kotlin:kotlin-compiler-embeddable"
+            'compiler': "org.jetbrains.kotlin:kotlin-compiler-embeddable",
+            'gradleapi': "org.jetbrains.kotlin:kotlin-gradle-plugin-api",
+            'gradle': "org.jetbrains.kotlin:kotlin-gradle-plugin"
         ],
         'junit': 'junit:junit:4.12',
         'kotlinpoet': 'com.squareup:kotlinpoet:1.3.0'

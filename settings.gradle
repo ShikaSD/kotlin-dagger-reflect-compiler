@@ -3,3 +3,4 @@ rootProject.name = 'dagger-reflect-compiler'
 include 'integration'
 include 'compiler:compiler-plugin'
 include 'compiler:gradle-plugin'
+project(':compiler:gradle-plugin').setName('dagger-reflect-compiler-plugin')

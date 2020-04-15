@@ -1,0 +1,53 @@
+plugins {
+    id 'com.gradle.plugin-publish' version '0.10.1'
+}
+
+apply plugin: "java-gradle-plugin"
+apply plugin: "org.jetbrains.kotlin.jvm"
+apply plugin: "maven-publish"
+
+pluginBundle {
+    website = 'https://github.com/ShikaSD/kotlin-dagger-reflect-compiler'
+    vcsUrl = 'https://github.com/ShikaSD/kotlin-dagger-reflect-compiler.git'
+    tags = ['kotlin', 'compiler-plugin', 'me.shika', 'dagger2', 'dagger-reflect']
+
+    plugins {
+        daggerReflectPlugin {
+            displayName = "Dagger reflect Kotlin compiler plugin"
+            description = "Compiler plugin to generate builders and factories for dagger-reflect without kapt"
+        }
+    }
+
+    mavenCoordinates {
+        groupId = project.getGroup()
+        artifactId = project.getName()
+        version = project.getVersion()
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId = project.getName()
+        }
+    }
+}
+
+gradlePlugin {
+    //noinspection GroovyAssignabilityCheck
+    plugins {
+        diPlugin {
+            id = "me.shika.dagger-reflect-compiler-plugin"
+            implementationClass = "me.shika.DaggerReflectCompilerPlugin"
+        }
+    }
+}
+
+dependencies {
+    implementation deps.kotlin.stdlib
+    compileOnly deps.kotlin.gradleapi
+    compileOnly deps.kotlin.gradle
+    compileOnly deps.kotlin.compiler
+
+    implementation project(':compiler:compiler-plugin')
+}

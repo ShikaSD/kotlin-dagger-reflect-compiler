@@ -18,6 +18,8 @@ import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter.Companion.CLASSI
 import java.io.File
 
 class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandlerExtension {
+    private val generated = hashSetOf<ModuleDescriptor>()
+
     override fun doAnalysis(
         project: Project,
         module: ModuleDescriptor,
@@ -26,6 +28,14 @@ class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandle
         bindingTrace: BindingTrace,
         componentProvider: ComponentProvider
     ): AnalysisResult? {
+        if (module in generated) {
+            generated.remove(module)
+            return null
+        }
+
+        outputDir.deleteRecursively()
+        outputDir.mkdirs()
+
         val resolveSession = componentProvider.get<ResolveSession>()
 
         for (file in files) {
@@ -41,7 +51,14 @@ class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandle
             )
         }
 
-        return null
+        generated += module
+
+        return AnalysisResult.RetryWithAdditionalRoots(
+            bindingContext = bindingTrace.bindingContext,
+            moduleDescriptor = module,
+            additionalKotlinRoots = listOf(outputDir),
+            additionalJavaRoots = emptyList()
+        )
     }
 
     private fun processDescriptor(descriptor: ClassDescriptor) {
