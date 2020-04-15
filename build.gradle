@@ -30,6 +30,9 @@ group 'me.shika'
 version '1.0.0-SNAPSHOT'
 
 allprojects {
+    group = rootProject.getGroup()
+    version = rootProject.getVersion()
+
     repositories {
         mavenLocal()
         mavenCentral()

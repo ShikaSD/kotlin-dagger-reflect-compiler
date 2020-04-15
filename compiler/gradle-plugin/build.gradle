@@ -6,6 +6,8 @@ apply plugin: "java-gradle-plugin"
 apply plugin: "org.jetbrains.kotlin.jvm"
 apply plugin: "maven-publish"
 
+def ARTIFACT_ID = 'dagger-reflect-compiler-plugin'
+
 pluginBundle {
     website = 'https://github.com/ShikaSD/kotlin-dagger-reflect-compiler'
     vcsUrl = 'https://github.com/ShikaSD/kotlin-dagger-reflect-compiler.git'
@@ -20,15 +22,16 @@ pluginBundle {
 
     mavenCoordinates {
         groupId = project.getGroup()
-        artifactId = project.getName()
+        artifactId = ARTIFACT_ID
         version = project.getVersion()
     }
 }
 
 publishing {
     publications {
-        maven(MavenPublication) {
-            artifactId = project.getName()
+        mavenJava(MavenPublication) {
+            artifactId = ARTIFACT_ID
+            from components.java
         }
     }
 }
@@ -49,5 +52,5 @@ dependencies {
     compileOnly deps.kotlin.gradle
     compileOnly deps.kotlin.compiler
 
-    implementation project(':compiler:compiler-plugin')
+    compileOnly project(':compiler:compiler-plugin')
 }

@@ -64,7 +64,7 @@ class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandle
     private fun processDescriptor(descriptor: ClassDescriptor) {
         val componentAnnotation = descriptor.annotations.findAnnotation(COMPONENT_FQ_NAME) ?: return
 
-        val renderer = DaggerReflectRenderer(outputDir, descriptor)
+        val renderer = DaggerReflectRenderer(outputDir, descriptor, componentAnnotation)
         val childClasses = descriptor.unsubstitutedMemberScope.getContributedDescriptors(kindFilter = CLASSIFIERS)
 
         val factory = childClasses.find {

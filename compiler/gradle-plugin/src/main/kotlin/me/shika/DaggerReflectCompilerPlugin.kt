@@ -1,6 +1,7 @@
 package me.shika
 
 import me.shika.dagger.reflect.DaggerReflectCLProcessor
+import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.plugins.ide.idea.model.IdeaModule
@@ -13,7 +14,13 @@ import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
 import org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile
 import java.io.File
 
-class DaggerReflectCompilerPlugin : KotlinGradleSubplugin<AbstractKotlinCompile<*>> {
+class DaggerReflectCompilerPlugin : Plugin<Project> {
+    override fun apply(target: Project) {
+        // TODO verify enabled?
+    }
+}
+
+class DaggerReflectCompilerSubplugin : KotlinGradleSubplugin<AbstractKotlinCompile<*>> {
     override fun apply(
         project: Project,
         kotlinCompile: AbstractKotlinCompile<*>,

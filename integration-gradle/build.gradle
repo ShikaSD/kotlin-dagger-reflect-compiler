@@ -1,0 +1,21 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
+
+    dependencies {
+        classpath 'me.shika:dagger-reflect-compiler-plugin:1.0.0-SNAPSHOT'
+    }
+}
+
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+apply plugin: 'me.shika.dagger-reflect-compiler-plugin'
+
+dependencies {
+    implementation deps.kotlin.stdlib
+    implementation deps.dagger.runtime
+}
