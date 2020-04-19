@@ -1,12 +1,12 @@
 import dagger.Component
 
 @Component
-interface SomeComponent : TestInterface {
+interface TestComponent {
 
     fun test(): Int
 
     @Component.Factory
     interface Factory {
-        fun factory(): SomeComponent
+        fun factory(): TestComponent
     }
 }

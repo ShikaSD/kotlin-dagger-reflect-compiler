@@ -1,12 +1,13 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm'
 }
+apply from: "$rootDir/gradle/utils/embedded.gradle"
 
 dependencies {
-    implementation deps.kotlin.stdlib
-    implementation deps.dagger.runtime
-    implementation deps.dagger.reflect
-    implementation deps.kotlinpoet
+    published deps.kotlin.stdlib
+    published deps.dagger.runtime
+    published deps.dagger.reflect
+    published deps.kotlinpoet
 
     compileOnly deps.kotlin.compiler
 }

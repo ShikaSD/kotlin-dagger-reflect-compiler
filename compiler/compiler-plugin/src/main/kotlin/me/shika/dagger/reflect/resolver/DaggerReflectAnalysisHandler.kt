@@ -18,7 +18,7 @@ import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter.Companion.CLASSI
 import java.io.File
 
 class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandlerExtension {
-    private val generated = hashSetOf<ModuleDescriptor>()
+    private var generated = false
 
     override fun doAnalysis(
         project: Project,
@@ -28,8 +28,8 @@ class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandle
         bindingTrace: BindingTrace,
         componentProvider: ComponentProvider
     ): AnalysisResult? {
-        if (module in generated) {
-            generated.remove(module)
+        if (generated) {
+            generated = false
             return null
         }
 
@@ -51,7 +51,7 @@ class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandle
             )
         }
 
-        generated += module
+        generated = true
 
         return AnalysisResult.RetryWithAdditionalRoots(
             bindingContext = bindingTrace.bindingContext,

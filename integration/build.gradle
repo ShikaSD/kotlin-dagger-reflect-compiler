@@ -28,6 +28,7 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all { it ->
     }
     idea.module.generatedSourceDirs += sourcesDir
 
+    it.usePreciseJavaTracking = false
     kotlinOptions {
         freeCompilerArgs = [
             "-P",

@@ -17,5 +17,6 @@ apply plugin: 'me.shika.dagger-reflect-compiler-plugin'
 
 dependencies {
     implementation deps.kotlin.stdlib
+    implementation deps.dagger.reflect
     implementation deps.dagger.runtime
 }

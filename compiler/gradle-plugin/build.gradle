@@ -5,6 +5,7 @@ plugins {
 apply plugin: "java-gradle-plugin"
 apply plugin: "org.jetbrains.kotlin.jvm"
 apply plugin: "maven-publish"
+apply from: "$rootDir/gradle/utils/embedded.gradle"
 
 def ARTIFACT_ID = 'dagger-reflect-compiler-plugin'
 
@@ -52,5 +53,5 @@ dependencies {
     compileOnly deps.kotlin.gradle
     compileOnly deps.kotlin.compiler
 
-    compileOnly project(':compiler:compiler-plugin')
+    embedded project(':compiler:compiler-plugin')
 }
