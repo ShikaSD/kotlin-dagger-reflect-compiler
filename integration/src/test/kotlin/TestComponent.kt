@@ -6,7 +6,7 @@ interface TestComponent {
     fun test(): Int
 
     @Component.Factory
-    interface Factory {
+    interface Factoy {
         fun factory(): TestComponent
     }
 }

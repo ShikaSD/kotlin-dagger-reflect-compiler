@@ -2,7 +2,6 @@ package me.shika.dagger.reflect.resolver
 
 import me.shika.dagger.reflect.renderer.DaggerReflectRenderer
 import org.jetbrains.kotlin.analyzer.AnalysisResult
-import org.jetbrains.kotlin.com.intellij.openapi.fileEditor.FileDocumentManager
 import org.jetbrains.kotlin.com.intellij.openapi.project.Project
 import org.jetbrains.kotlin.com.intellij.psi.PsiManager
 import org.jetbrains.kotlin.com.intellij.psi.impl.PsiManagerImpl
@@ -70,7 +69,8 @@ class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandle
             bindingContext = bindingTrace.bindingContext,
             moduleDescriptor = module,
             additionalKotlinRoots = listOf(outputDir),
-            additionalJavaRoots = emptyList()
+            additionalJavaRoots = emptyList(),
+            addToEnvironment = true
         )
     }
 
@@ -118,7 +118,6 @@ class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandle
 
     private fun Project.dropFileCaches(file: KtFile) {
         (PsiManager.getInstance(this) as PsiManagerImpl).fileManager.setViewProvider(file.virtualFile, null)
-        file.viewProvider.document?.let { FileDocumentManager.getInstance().reloadFromDisk(it) }
     }
 
     companion object {
