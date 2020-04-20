@@ -19,7 +19,6 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all { it ->
     def isTest = it.name.contains("Test")
 
     def sourcesDir = new File(buildDir, "generated/source/dagger-reflect-plugin/${it.name}/")
-    sourcesDir.mkdirs()
 
     if (isTest) {
         idea.module.testSourceDirs += sourcesDir
