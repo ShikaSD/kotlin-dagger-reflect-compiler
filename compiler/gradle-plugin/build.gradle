@@ -1,5 +1,5 @@
 plugins {
-    id 'com.gradle.plugin-publish' version '0.10.1'
+    id 'com.gradle.plugin-publish' version '0.11.0'
 }
 
 apply plugin: "java-gradle-plugin"
@@ -17,7 +17,7 @@ pluginBundle {
     plugins {
         daggerReflectPlugin {
             displayName = "Dagger reflect Kotlin compiler plugin"
-            description = "Compiler plugin to generate builders and factories for dagger-reflect without kapt"
+            description = "Compiler plugin to generate Kotlin builders and factories for dagger-reflect without kapt"
         }
     }
 
@@ -40,7 +40,7 @@ publishing {
 gradlePlugin {
     //noinspection GroovyAssignabilityCheck
     plugins {
-        diPlugin {
+        daggerReflectPlugin {
             id = "me.shika.dagger-reflect-compiler-plugin"
             implementationClass = "me.shika.DaggerReflectCompilerPlugin"
         }

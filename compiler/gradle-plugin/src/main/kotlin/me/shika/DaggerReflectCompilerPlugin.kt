@@ -20,7 +20,6 @@ import java.io.File
 
 class DaggerReflectCompilerPlugin : Plugin<Project> {
     override fun apply(target: Project) {
-        println("Apply plugin")
         target.apply { it.plugin(IdeaPlugin::class.java) }
     }
 }
@@ -34,6 +33,8 @@ class DaggerReflectCompilerSubplugin : KotlinGradleSubplugin<KotlinCompile> {
         androidProjectHandler: Any?,
         kotlinCompilation: KotlinCompilation<KotlinCommonOptions>?
     ): List<SubpluginOption> {
+        println("Applying dagger reflect on $project $kotlinCompile")
+
         val variant = when (variantData) {
             is BaseVariant -> variantData
             is KaptVariantData<*> -> variantData.variantData as BaseVariant
@@ -41,7 +42,7 @@ class DaggerReflectCompilerSubplugin : KotlinGradleSubplugin<KotlinCompile> {
         }
         val outputDirectory = File(project.buildDir, "generated/source/dagger-reflect/${kotlinCompile.name}")
 
-        project.extensions.configure(IdeaModel::class.java) { model ->
+        project.extensions.findByType(IdeaModel::class.java)?.let { model ->
             model.apply {
                 val isTest = kotlinCompile.name.contains("test", ignoreCase = true)
                 if (!isTest) {
@@ -72,5 +73,8 @@ class DaggerReflectCompilerSubplugin : KotlinGradleSubplugin<KotlinCompile> {
         SubpluginArtifact("me.shika", "dagger-reflect-compiler-plugin", "1.0.0-SNAPSHOT")
 
     override fun isApplicable(project: Project, task: AbstractCompile): Boolean =
-        task is AbstractKotlinCompile<*> && task !is KaptGenerateStubsTask
+        project.isPluginEnabled && task is AbstractKotlinCompile<*> && task !is KaptGenerateStubsTask
+
+    private val Project.isPluginEnabled
+        get() = project.plugins.findPlugin(DaggerReflectCompilerPlugin::class.java) != null
 }

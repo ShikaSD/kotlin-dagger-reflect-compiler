@@ -1,6 +1,5 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm'
-    id 'idea'
 }
 
 dependencies {
@@ -20,12 +19,12 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all { it ->
 
     def sourcesDir = new File(buildDir, "generated/source/dagger-reflect-plugin/${it.name}/")
 
-    if (isTest) {
-        idea.module.testSourceDirs += sourcesDir
-    } else {
-        idea.module.sourceDirs += sourcesDir
-    }
-    idea.module.generatedSourceDirs += sourcesDir
+//    if (isTest) {
+//        idea.module.testSourceDirs += sourcesDir
+//    } else {
+//        idea.module.sourceDirs += sourcesDir
+//    }
+//    idea.module.generatedSourceDirs += sourcesDir
 
     it.usePreciseJavaTracking = false
     kotlinOptions {
