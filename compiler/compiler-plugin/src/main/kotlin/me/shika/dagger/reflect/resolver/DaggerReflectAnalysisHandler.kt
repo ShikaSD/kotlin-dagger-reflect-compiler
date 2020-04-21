@@ -112,8 +112,14 @@ class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandle
         val COMPONENT_FACTORY_FQ_NAME = FqName(dagger.Component.Factory::class.qualifiedName!!)
         val COMPONENT_BUILDER_FQ_NAME = FqName(dagger.Component.Builder::class.qualifiedName!!)
 
-        private val kaptExtension = this::class.java.classLoader.loadClass("org.jetbrains.kotlin.kapt3.AbstractKapt3Extension")
+        private val kaptExtension =
+            try {
+                Class.forName("org.jetbrains.kotlin.kapt3.AbstractKapt3Extension")
+            } catch (e: ClassNotFoundException) {
+                null
+            }
+
         private val Project.isKaptExecution
-            get() = AnalysisHandlerExtension.getInstances(this).any { kaptExtension.isInstance(it) }
+            get() = AnalysisHandlerExtension.getInstances(this).any { kaptExtension?.isInstance(it) == true }
     }
 }
