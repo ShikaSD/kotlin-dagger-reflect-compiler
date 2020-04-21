@@ -18,16 +18,9 @@ import org.jetbrains.kotlin.resolve.jvm.extensions.AnalysisHandlerExtension
 import org.jetbrains.kotlin.resolve.lazy.ResolveSession
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter.Companion.CLASSIFIERS
 import java.io.File
-import java.util.logging.FileHandler
-import java.util.logging.Logger
 
 class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandlerExtension {
     private var generated = false
-    private val log = Logger.getLogger("test")
-
-    init {
-        log.addHandler(handler)
-    }
 
     override fun doAnalysis(
         project: Project,
@@ -37,7 +30,6 @@ class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandle
         bindingTrace: BindingTrace,
         componentProvider: ComponentProvider
     ): AnalysisResult? {
-        log.info("Files $files, generated=$generated")
         if (generated) {
             generated = false
             return null
@@ -101,11 +93,6 @@ class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandle
         renderer.generateDefaultBuilder()
     }
 
-    override fun analysisCompleted(project: Project, module: ModuleDescriptor, bindingTrace: BindingTrace, files: Collection<KtFile>): AnalysisResult? {
-        handler.close()
-        return super.analysisCompleted(project, module, bindingTrace, files)
-    }
-
     private fun Project.removeFilesFromLastCompilation(files: MutableCollection<KtFile>) {
         files.removeIf { file ->
             file.virtualFilePath.startsWith(outputDir.absolutePath).also { removed ->
@@ -124,7 +111,5 @@ class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandle
         val COMPONENT_FQ_NAME = FqName(dagger.Component::class.qualifiedName!!)
         val COMPONENT_FACTORY_FQ_NAME = FqName(dagger.Component.Factory::class.qualifiedName!!)
         val COMPONENT_BUILDER_FQ_NAME = FqName(dagger.Component.Builder::class.qualifiedName!!)
-
-        private val handler = FileHandler("/Users/andreishikov/projects/test/dagger-reflect-compiler/test.log", true)
     }
 }

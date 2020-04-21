@@ -1,7 +1,7 @@
 import dagger.Component
 
 @Component
-interface SomeComponent {
+interface SomeComponent : TestInterface {
 
     fun test(): Int
 

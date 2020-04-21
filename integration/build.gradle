@@ -31,7 +31,8 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all { it ->
     kotlinOptions {
         freeCompilerArgs = [
             "-P",
-            "plugin:me.shika.dagger-reflect:outputDir=${sourcesDir.getAbsolutePath()}"
+            "plugin:me.shika.dagger-reflect:outputDir=${sourcesDir.getAbsolutePath()}",
+            "-Xreport-perf"
         ]
     }
 }

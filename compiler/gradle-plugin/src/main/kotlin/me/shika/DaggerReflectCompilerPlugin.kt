@@ -1,12 +1,15 @@
 package me.shika
 
+import com.android.build.gradle.api.BaseVariant
 import me.shika.dagger.reflect.DaggerReflectCLProcessor
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.plugins.ide.idea.IdeaPlugin
+import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions
 import org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask
+import org.jetbrains.kotlin.gradle.internal.KaptVariantData
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinGradleSubplugin
 import org.jetbrains.kotlin.gradle.plugin.SubpluginArtifact
@@ -17,8 +20,8 @@ import java.io.File
 
 class DaggerReflectCompilerPlugin : Plugin<Project> {
     override fun apply(target: Project) {
+        println("Apply plugin")
         target.apply { it.plugin(IdeaPlugin::class.java) }
-        // TODO verify enabled?
     }
 }
 
@@ -31,9 +34,29 @@ class DaggerReflectCompilerSubplugin : KotlinGradleSubplugin<KotlinCompile> {
         androidProjectHandler: Any?,
         kotlinCompilation: KotlinCompilation<KotlinCommonOptions>?
     ): List<SubpluginOption> {
+        val variant = when (variantData) {
+            is BaseVariant -> variantData
+            is KaptVariantData<*> -> variantData.variantData as BaseVariant
+            else -> null
+        }
         val outputDirectory = File(project.buildDir, "generated/source/dagger-reflect/${kotlinCompile.name}")
-        kotlinCompile.usePreciseJavaTracking = false
 
+        project.extensions.configure(IdeaModel::class.java) { model ->
+            model.apply {
+                val isTest = kotlinCompile.name.contains("test", ignoreCase = true)
+                if (!isTest) {
+                    module.sourceDirs = module.sourceDirs + outputDirectory
+                    variant?.addJavaSourceFoldersToModel(outputDirectory)
+                } else {
+                    module.testSourceDirs = module.testSourceDirs + outputDirectory
+                    variant?.addJavaSourceFoldersToModel(outputDirectory)
+                }
+
+                module.generatedSourceDirs = module.generatedSourceDirs + outputDirectory
+            }
+        }
+
+        kotlinCompile.usePreciseJavaTracking = false
         return listOf(
             SubpluginOption(
                 DaggerReflectCLProcessor.OUTPUT_DIR_OPTION.optionName,

@@ -52,6 +52,7 @@ dependencies {
     compileOnly deps.kotlin.gradleapi
     compileOnly deps.kotlin.gradle
     compileOnly deps.kotlin.compiler
+    compileOnly deps.android.gradle
 
     embedded project(':compiler:compiler-plugin')
 }
