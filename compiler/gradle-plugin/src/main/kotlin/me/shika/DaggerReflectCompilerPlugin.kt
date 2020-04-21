@@ -46,7 +46,7 @@ class DaggerReflectCompilerSubplugin : KotlinGradleSubplugin<KotlinCompile> {
         project.extensions.findByType(IdeaModel::class.java)?.let { model ->
             model.apply {
                 val isTest = kotlinCompile.name.contains("test", ignoreCase = true)
-                if (!isTest) {
+                if (!isTest ) {
                     module.sourceDirs = module.sourceDirs + outputDirectory
                     variant?.addJavaSourceFoldersToModel(outputDirectory)
                 } else {

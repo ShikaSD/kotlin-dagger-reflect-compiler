@@ -30,7 +30,7 @@ class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandle
         bindingTrace: BindingTrace,
         componentProvider: ComponentProvider
     ): AnalysisResult? {
-        if (generated) {
+        if (generated || project.isKaptExecution) {
             generated = false
             return null
         }
@@ -111,5 +111,9 @@ class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandle
         val COMPONENT_FQ_NAME = FqName(dagger.Component::class.qualifiedName!!)
         val COMPONENT_FACTORY_FQ_NAME = FqName(dagger.Component.Factory::class.qualifiedName!!)
         val COMPONENT_BUILDER_FQ_NAME = FqName(dagger.Component.Builder::class.qualifiedName!!)
+
+        private val kaptExtension = this::class.java.classLoader.loadClass("org.jetbrains.kotlin.kapt3.AbstractKapt3Extension")
+        private val Project.isKaptExecution
+            get() = AnalysisHandlerExtension.getInstances(this).any { kaptExtension.isInstance(it) }
     }
 }
