@@ -6,6 +6,7 @@ import org.jetbrains.kotlin.compiler.plugin.CliOption
 import org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.CompilerConfigurationKey
+import org.jetbrains.kotlin.kapt.cli.KaptCliOption
 import java.io.File
 
 class DaggerReflectCLProcessor : CommandLineProcessor {
@@ -31,6 +32,25 @@ class DaggerReflectCLProcessor : CommandLineProcessor {
     }
 }
 
+class KaptInterceptCLProcessor : CommandLineProcessor {
+    private var enabled: Boolean = true
+    init {
+        try {
+            Class.forName("org.jetbrains.kotlin.kapt.cli.KaptCliOption")
+        } catch (e: ClassNotFoundException) {
+            enabled = false
+        }
+    }
+
+    override val pluginId: String = KaptCliOption.ANNOTATION_PROCESSING_COMPILER_PLUGIN_ID
+    override val pluginOptions: Collection<AbstractCliOption> = if (enabled) KaptCliOption.values().toList() else emptyList()
+
+    override fun processOption(option: AbstractCliOption, value: String, configuration: CompilerConfiguration) {
+        configuration.put(Keys.KAPT_ENABLED, true)
+    }
+}
+
 object Keys {
     val OUTPUT_DIR = CompilerConfigurationKey.create<File>("$PLUGIN_ID.outputDir")
+    val KAPT_ENABLED = CompilerConfigurationKey.create<Boolean>("$PLUGIN_ID.kaptEnabled")
 }

@@ -11,6 +11,10 @@ class DaggerReflectPlugin : ComponentRegistrar {
         val outputDir = configuration[Keys.OUTPUT_DIR]
             ?: throw IllegalArgumentException("Output directory is not specified")
 
+        if (configuration[Keys.KAPT_ENABLED] == true) {
+            return
+        }
+
         AnalysisHandlerExtension.registerExtension(project, DaggerReflectAnalysisHandler(outputDir))
     }
 

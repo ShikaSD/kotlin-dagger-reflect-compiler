@@ -15,7 +15,8 @@ buildscript {
             'stdlib': "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
             'compiler': "org.jetbrains.kotlin:kotlin-compiler-embeddable",
             'gradleapi': "org.jetbrains.kotlin:kotlin-gradle-plugin-api",
-            'gradle': "org.jetbrains.kotlin:kotlin-gradle-plugin"
+            'gradle': "org.jetbrains.kotlin:kotlin-gradle-plugin",
+            'kapt': "org.jetbrains.kotlin:kotlin-annotation-processing-gradle"
         ],
         'android': [
             'gradle': 'com.android.tools.build:gradle:3.6.0'

@@ -1,12 +1,12 @@
 import dagger.Component
 
 @Component
-interface SomeComponent : TestInterface {
+interface SomeComponent2 : TestInterface {
     fun test(): Int
 
     @Component
     interface Nested {
-        fun est(): Long
+        fun test(): Long
 
         @Component.Factory
         interface Factory {
@@ -16,7 +16,7 @@ interface SomeComponent : TestInterface {
 
 
     @Component.Factory
-    interface actory {
-        fun factory(): SomeComponent
+    interface Factory {
+        fun factory(): SomeComponent2
     }
 }

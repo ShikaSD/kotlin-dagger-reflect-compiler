@@ -5,12 +5,13 @@ import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.MemberName
-import com.squareup.kotlinpoet.MemberName.Companion.member
 import com.squareup.kotlinpoet.TypeSpec
 import dagger.Dagger
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationDescriptor
+import org.jetbrains.kotlin.js.resolve.diagnostics.findPsi
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.constants.ArrayValue
 import org.jetbrains.kotlin.resolve.constants.KClassValue
 import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameSafe
@@ -23,9 +24,12 @@ class DaggerReflectRenderer(
     private val component: ClassDescriptor,
     private val componentAnnotation: AnnotationDescriptor
 ) {
-    private val componentClassName = component.fqNameSafe.run { ClassName(parent().asString(), shortName().asString()) }
+    private val componentClassName = component.className()
     private val generatedComponentClassName =
-        ClassName(componentClassName.packageName, GENERATED_COMPONENT_PREFIX + componentClassName.simpleName)
+        ClassName(
+            packageName = componentClassName.packageName,
+            simpleName = GENERATED_COMPONENT_PREFIX + componentClassName.simpleNames.joinToString(separator = "_")
+        )
 
     fun generateFactory(factory: ClassDescriptor) =
         file {
@@ -61,6 +65,7 @@ class DaggerReflectRenderer(
     private inline fun FileSpec.Builder.generatedComponent(block: TypeSpec.Builder.() -> Unit) {
         addType(
             TypeSpec.classBuilder(generatedComponentClassName)
+                .addSuperinterface(componentClassName)
                 .addModifiers(KModifier.ABSTRACT)
                 .addType(
                     TypeSpec.companionObjectBuilder()
@@ -87,6 +92,19 @@ class DaggerReflectRenderer(
         (this.allValueArguments[Name.identifier(name)] as ArrayValue)
             .value
             .map { (it as KClassValue).getType(component.module) }
+
+    private fun ClassDescriptor.className(): ClassName {
+        val psiClass = findPsi()
+        return if (psiClass != null) {
+            val containingFile = psiClass.containingFile as KtFile
+            val packageName = containingFile.packageFqName.asString()
+            val classFqName = fqNameSafe.asString()
+            val simpleNames = classFqName.removePrefix("$packageName.").split(".")
+            ClassName(packageName, simpleNames.first(), *simpleNames.drop(1).toTypedArray())
+        } else {
+            ClassName(fqNameSafe.parent().asString(), fqNameSafe.shortName().asString())
+        }
+    }
 
     companion object {
         private const val GENERATED_COMPONENT_PREFIX = "Dagger"

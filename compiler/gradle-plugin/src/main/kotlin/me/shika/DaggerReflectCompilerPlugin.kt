@@ -9,7 +9,6 @@ import org.gradle.plugins.ide.idea.IdeaPlugin
 import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions
 import org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask
-import org.jetbrains.kotlin.gradle.internal.KaptTask
 import org.jetbrains.kotlin.gradle.internal.KaptVariantData
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinGradleSubplugin
@@ -74,7 +73,7 @@ class DaggerReflectCompilerSubplugin : KotlinGradleSubplugin<KotlinCompile> {
         SubpluginArtifact("me.shika", "dagger-reflect-compiler-plugin", "1.0.0-SNAPSHOT")
 
     override fun isApplicable(project: Project, task: AbstractCompile): Boolean =
-        project.isPluginEnabled && task is AbstractKotlinCompile<*> && task !is KaptGenerateStubsTask && task !is KaptTask
+        project.isPluginEnabled && task is AbstractKotlinCompile<*> && task !is KaptGenerateStubsTask
 
     private val Project.isPluginEnabled
         get() = project.plugins.findPlugin(DaggerReflectCompilerPlugin::class.java) != null

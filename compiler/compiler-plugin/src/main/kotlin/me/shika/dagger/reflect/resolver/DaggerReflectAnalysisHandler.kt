@@ -30,15 +30,14 @@ class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandle
         bindingTrace: BindingTrace,
         componentProvider: ComponentProvider
     ): AnalysisResult? {
-        if (generated || project.isKaptExecution) {
-            generated = false
+        if (generated) {
             return null
         }
 
+        project.removeFilesFromLastCompilation(files as MutableCollection<KtFile>)
+
         outputDir.deleteRecursively()
         outputDir.mkdirs()
-
-        project.removeFilesFromLastCompilation(files as MutableCollection<KtFile>)
 
         val resolveSession = componentProvider.get<ResolveSession>()
 
@@ -111,15 +110,5 @@ class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandle
         val COMPONENT_FQ_NAME = FqName(dagger.Component::class.qualifiedName!!)
         val COMPONENT_FACTORY_FQ_NAME = FqName(dagger.Component.Factory::class.qualifiedName!!)
         val COMPONENT_BUILDER_FQ_NAME = FqName(dagger.Component.Builder::class.qualifiedName!!)
-
-        private val kaptExtension =
-            try {
-                Class.forName("org.jetbrains.kotlin.kapt3.AbstractKapt3Extension")
-            } catch (e: ClassNotFoundException) {
-                null
-            }
-
-        private val Project.isKaptExecution
-            get() = AnalysisHandlerExtension.getInstances(this).any { kaptExtension?.isInstance(it) == true }
     }
 }

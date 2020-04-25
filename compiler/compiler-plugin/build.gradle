@@ -10,6 +10,7 @@ dependencies {
     published deps.kotlinpoet
 
     compileOnly deps.kotlin.compiler
+    compileOnly deps.kotlin.kapt
 }
 
 compileKotlin {

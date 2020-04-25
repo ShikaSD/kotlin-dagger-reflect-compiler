@@ -1,1 +1,2 @@
 me.shika.dagger.reflect.DaggerReflectCLProcessor
+me.shika.dagger.reflect.KaptInterceptCLProcessor
