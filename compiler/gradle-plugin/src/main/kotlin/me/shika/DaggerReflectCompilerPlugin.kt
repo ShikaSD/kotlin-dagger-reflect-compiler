@@ -41,6 +41,7 @@ class DaggerReflectCompilerSubplugin : KotlinGradleSubplugin<KotlinCompile> {
             else -> null
         }
         val outputDirectory = File(project.buildDir, "generated/source/dagger-reflect/${kotlinCompile.name}")
+        val icOutputDirectory = File(project.buildDir, "kotlin/${kotlinCompile.name}/dagger-reflect/")
 
         project.extensions.findByType(IdeaModel::class.java)?.let { model ->
             model.apply {
@@ -62,6 +63,10 @@ class DaggerReflectCompilerSubplugin : KotlinGradleSubplugin<KotlinCompile> {
             SubpluginOption(
                 DaggerReflectCLProcessor.OUTPUT_DIR_OPTION.optionName,
                 outputDirectory.toString()
+            ),
+            SubpluginOption(
+                DaggerReflectCLProcessor.INCREMENTAL_DIR_OPTION.optionName,
+                icOutputDirectory.toString()
             )
         )
     }

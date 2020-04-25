@@ -11,11 +11,12 @@ import java.io.File
 
 class DaggerReflectCLProcessor : CommandLineProcessor {
     override val pluginId: String = PLUGIN_ID
-    override val pluginOptions: Collection<AbstractCliOption> = listOf(OUTPUT_DIR_OPTION)
+    override val pluginOptions: Collection<AbstractCliOption> = listOf(OUTPUT_DIR_OPTION, INCREMENTAL_DIR_OPTION)
 
     override fun processOption(option: AbstractCliOption, value: String, configuration: CompilerConfiguration) {
         when (option) {
             OUTPUT_DIR_OPTION -> configuration.put(Keys.OUTPUT_DIR, File(value))
+            INCREMENTAL_DIR_OPTION -> configuration.put(Keys.IC_OUTPUT_DIR, File(value))
         }
     }
 
@@ -27,6 +28,15 @@ class DaggerReflectCLProcessor : CommandLineProcessor {
                 valueDescription = "<path>",
                 description = "Resulting generated files",
                 required = true,
+                allowMultipleOccurrences = false
+            )
+
+        val INCREMENTAL_DIR_OPTION =
+            CliOption(
+                optionName = "icOutputDir",
+                valueDescription = "<path>",
+                description = "Temporary data for ic compilation",
+                required = false,
                 allowMultipleOccurrences = false
             )
     }
@@ -52,5 +62,6 @@ class KaptInterceptCLProcessor : CommandLineProcessor {
 
 object Keys {
     val OUTPUT_DIR = CompilerConfigurationKey.create<File>("$PLUGIN_ID.outputDir")
+    val IC_OUTPUT_DIR = CompilerConfigurationKey.create<File>("$PLUGIN_ID.icOutputDir")
     val KAPT_ENABLED = CompilerConfigurationKey.create<Boolean>("$PLUGIN_ID.kaptEnabled")
 }

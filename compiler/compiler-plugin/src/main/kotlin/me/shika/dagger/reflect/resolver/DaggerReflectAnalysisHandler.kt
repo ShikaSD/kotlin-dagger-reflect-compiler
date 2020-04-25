@@ -18,12 +18,14 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.classOrObjectRecursiveVisitor
 import org.jetbrains.kotlin.resolve.BindingTrace
+import org.jetbrains.kotlin.resolve.descriptorUtil.classId
 import org.jetbrains.kotlin.resolve.jvm.extensions.AnalysisHandlerExtension
 import org.jetbrains.kotlin.resolve.lazy.ResolveSession
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter.Companion.CLASSIFIERS
 import java.io.File
+import java.io.FileOutputStream
 
-class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandlerExtension {
+class DaggerReflectAnalysisHandler(private val outputDir: File, private val icOutputDir: File?) : AnalysisHandlerExtension {
     private var generated = false
 
     override fun doAnalysis(
@@ -37,30 +39,32 @@ class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandle
         if (generated) {
             return null
         }
-        val localFileSystem = VirtualFileManager.getInstance().getFileSystem(StandardFileSystems.FILE_PROTOCOL)
 
-        val toDelete = mutableSetOf<File>()
-        outputDir.walkTopDown().forEach { file ->
-            if (file.isDirectory) return@forEach
-            file.bufferedReader().use {
-                val line = it.readLine()
-                if (line?.startsWith("// source: ") != true) {
-                    return@use
-                }
-                val sourcePath = line.removePrefix("// source: ")
-                val (pkg, clsName) = sourcePath.split(":")
-                val cls = module.findClassAcrossModuleDependencies(ClassId(FqName(pkg), FqName(clsName), false))
-                if (cls == null) {
-                    toDelete += file
-                }
+        outputDir.mkdirs()
+        icOutputDir?.mkdirs()
+
+        val manifest = File(icOutputDir, "compiled-manifest.txt")
+        val entries = if (manifest.exists()) {
+            manifest.bufferedReader().useLines {
+                it.map { line ->
+                    val chunks = line.split(":")
+                    val path = chunks[0]
+                    val pkg = chunks[1]
+                    val classNames = chunks[2]
+                    val classId = ClassId(FqName(pkg), FqName(classNames), false)
+                    ICEntry(classId, path)
+                }.toSet()
             }
+        } else {
+            emptySet()
         }
-        toDelete.forEach { it.delete() }
-        (files as MutableCollection<KtFile>).removeAll { File(it.virtualFilePath) in toDelete }
+        val toDelete = entries.filter { module.findClassAcrossModuleDependencies(it.classId) == null }.map { it.compiledFilePath }
+        toDelete.forEach { File(it).delete() }
+        (files as MutableCollection<KtFile>).removeAll { it.virtualFilePath in toDelete }
 
         val resolveSession = componentProvider.get<ResolveSession>()
 
-        val newFiles = mutableSetOf<String>()
+        val newFiles = mutableSetOf<ICEntry>()
         for (file in files) {
             if (file.virtualFilePath.startsWith(outputDir.absolutePath)) {
                 continue
@@ -74,7 +78,10 @@ class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandle
 
                     val path = processDescriptor(descriptor)
                     if (path != null) {
-                        newFiles.add(outputDir.absolutePath + path)
+                        newFiles += ICEntry(
+                            descriptor.classId!!,
+                            outputDir.absolutePath + path
+                        )
                     }
                 }
             )
@@ -82,12 +89,23 @@ class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandle
 
         project.clearCachedOutputFiles(files)
 
+        val output = (entries.filter { it.compiledFilePath !in toDelete } + newFiles).toSet()
+        manifest.createNewFile()
+        FileOutputStream(manifest, false).bufferedWriter().use {
+            output.forEach { entry ->
+                val formatted = "${entry.compiledFilePath}:${entry.classId.packageFqName.asString()}:${entry.classId.relativeClassName.asString()}"
+                it.write(formatted)
+                it.write("\n")
+            }
+            it.flush()
+        }
+
         generated = true
 
         return AnalysisResult.RetryWithAdditionalRoots(
             bindingContext = bindingTrace.bindingContext,
             moduleDescriptor = module,
-            additionalKotlinRoots = newFiles.map { File(it) }.toList(),
+            additionalKotlinRoots = newFiles.map { File(it.compiledFilePath) }.toList(),
             additionalJavaRoots = emptyList(),
             addToEnvironment = true
         )
@@ -131,6 +149,11 @@ class DaggerReflectAnalysisHandler(private val outputDir: File) : AnalysisHandle
     private fun Project.dropFileCaches(file: KtFile) {
         (PsiManager.getInstance(this) as PsiManagerImpl).fileManager.setViewProvider(file.virtualFile, null)
     }
+
+    private data class ICEntry(
+        val classId: ClassId,
+        val compiledFilePath: String
+    )
 
     companion object {
         val COMPONENT_FQ_NAME = FqName(dagger.Component::class.qualifiedName!!)
