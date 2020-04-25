@@ -61,9 +61,11 @@ class DaggerReflectRenderer(
         FileSpec.builder(generatedComponentClassName.packageName, generatedComponentClassName.simpleName)
             .apply(block)
             .build()
-            .writeTo(outputDir)
+            .apply { writeTo(outputDir) }
+            .run { packageName.replace('.', File.separatorChar) + "${File.separatorChar}$name.kt" }
 
     private inline fun FileSpec.Builder.generatedComponent(block: TypeSpec.Builder.() -> Unit) {
+        addComment("source: ${componentClassName.packageName}:${componentClassName.simpleNames.joinToString(separator = ".")}")
         addType(
             TypeSpec.classBuilder(generatedComponentClassName)
                 .addSuperinterface(componentClassName)
