@@ -9,6 +9,7 @@ import com.squareup.kotlinpoet.MemberName.Companion.member
 import com.squareup.kotlinpoet.TypeSpec
 import dagger.Dagger
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationDescriptor
 import org.jetbrains.kotlin.js.resolve.diagnostics.findPsi
 import org.jetbrains.kotlin.name.Name
@@ -69,6 +70,11 @@ class DaggerReflectRenderer(
             TypeSpec.classBuilder(generatedComponentClassName)
                 .addSuperinterface(componentClassName)
                 .addModifiers(KModifier.ABSTRACT)
+                .apply {
+                    if (component.visibility == Visibilities.INTERNAL) {
+                        addModifiers(KModifier.INTERNAL)
+                    }
+                }
                 .addType(
                     TypeSpec.companionObjectBuilder()
                         .addModifiers(KModifier.COMPANION)

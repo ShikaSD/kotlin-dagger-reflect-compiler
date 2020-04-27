@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.classId
 import org.jetbrains.kotlin.resolve.jvm.extensions.AnalysisHandlerExtension
 import org.jetbrains.kotlin.resolve.lazy.ResolveSession
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter.Companion.CLASSIFIERS
+import org.jetbrains.kotlin.util.prefixIfNot
 import java.io.File
 import java.io.FileOutputStream
 
@@ -76,7 +77,7 @@ class DaggerReflectAnalysisHandler(private val outputDir: File, private val icOu
                     val descriptor = resolveSession.resolveToDescriptor(it)
                     if (descriptor !is ClassDescriptor) return@classOrObjectRecursiveVisitor
 
-                    val path = processDescriptor(descriptor)
+                    val path = processDescriptor(descriptor)?.prefixIfNot(File.separator)
                     if (path != null) {
                         newFiles += ICEntry(
                             descriptor.classId!!,
