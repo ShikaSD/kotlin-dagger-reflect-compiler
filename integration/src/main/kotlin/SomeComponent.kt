@@ -3,7 +3,7 @@ import dagger.Component
 @Component
 interface SomeComponent : TestInterface {
 
-    fun test(): Int
+    abstract fun test(): Int
 
     @Component.Factory
     interface Factory {

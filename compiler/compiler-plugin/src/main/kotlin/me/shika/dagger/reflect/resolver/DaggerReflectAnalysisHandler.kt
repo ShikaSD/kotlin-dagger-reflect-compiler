@@ -1,20 +1,26 @@
 package me.shika.dagger.reflect.resolver
 
+import me.shika.dagger.reflect.CLASS_SHOULD_BE_INTERFACE
+import me.shika.dagger.reflect.DaggerReflectErrors
 import me.shika.dagger.reflect.renderer.DaggerReflectRenderer
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.com.intellij.openapi.project.Project
-import org.jetbrains.kotlin.com.intellij.openapi.vfs.StandardFileSystems
-import org.jetbrains.kotlin.com.intellij.openapi.vfs.VirtualFileManager
 import org.jetbrains.kotlin.com.intellij.psi.PsiManager
 import org.jetbrains.kotlin.com.intellij.psi.impl.PsiManagerImpl
 import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.container.get
 import org.jetbrains.kotlin.context.ProjectContext
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.descriptors.findClassAcrossModuleDependencies
+import org.jetbrains.kotlin.diagnostics.Diagnostic
+import org.jetbrains.kotlin.diagnostics.Severity
+import org.jetbrains.kotlin.diagnostics.reportFromPlugin
+import org.jetbrains.kotlin.js.resolve.diagnostics.findPsi
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.classOrObjectRecursiveVisitor
 import org.jetbrains.kotlin.resolve.BindingTrace
@@ -77,7 +83,7 @@ class DaggerReflectAnalysisHandler(private val outputDir: File, private val icOu
                     val descriptor = resolveSession.resolveToDescriptor(it)
                     if (descriptor !is ClassDescriptor) return@classOrObjectRecursiveVisitor
 
-                    val path = processDescriptor(descriptor)?.prefixIfNot(File.separator)
+                    val path = processDescriptor(descriptor, bindingTrace)?.prefixIfNot(File.separator)
                     if (path != null) {
                         newFiles += ICEntry(
                             descriptor.classId!!,
@@ -103,17 +109,22 @@ class DaggerReflectAnalysisHandler(private val outputDir: File, private val icOu
 
         generated = true
 
-        return AnalysisResult.RetryWithAdditionalRoots(
-            bindingContext = bindingTrace.bindingContext,
-            moduleDescriptor = module,
-            additionalKotlinRoots = newFiles.map { File(it.compiledFilePath) }.toList(),
-            additionalJavaRoots = emptyList(),
-            addToEnvironment = true
-        )
+        return if (bindingTrace.bindingContext.diagnostics.any { it.severity == Severity.ERROR }) {
+            AnalysisResult.compilationError(bindingTrace.bindingContext)
+        } else {
+            AnalysisResult.RetryWithAdditionalRoots(
+                bindingContext = bindingTrace.bindingContext,
+                moduleDescriptor = module,
+                additionalKotlinRoots = newFiles.map { File(it.compiledFilePath) }.toList(),
+                additionalJavaRoots = emptyList(),
+                addToEnvironment = true
+            )
+        }
     }
 
-    private fun processDescriptor(descriptor: ClassDescriptor): String? {
+    private fun processDescriptor(descriptor: ClassDescriptor, trace: BindingTrace): String? {
         val componentAnnotation = descriptor.annotations.findAnnotation(COMPONENT_FQ_NAME) ?: return null
+        if (descriptor.reportIfClass(trace)) return null
 
         val renderer = DaggerReflectRenderer(outputDir, descriptor, componentAnnotation)
         val childClasses = descriptor.unsubstitutedMemberScope.getContributedDescriptors(kindFilter = CLASSIFIERS)
@@ -123,7 +134,9 @@ class DaggerReflectAnalysisHandler(private val outputDir: File, private val icOu
         }
 
         if (factory != null) {
-            return renderer.generateFactory(factory as ClassDescriptor)
+            factory as ClassDescriptor
+            if (factory.reportIfClass(trace)) return null
+            return renderer.generateFactory(factory)
         }
 
         val builder = childClasses.find {
@@ -131,7 +144,9 @@ class DaggerReflectAnalysisHandler(private val outputDir: File, private val icOu
         }
 
         if (builder != null) {
-            return renderer.generateBuilder(builder as ClassDescriptor)
+            builder as ClassDescriptor
+            if (builder.reportIfClass(trace)) return null
+            return renderer.generateBuilder(builder)
         }
 
         return renderer.generateDefaultBuilder()
@@ -156,9 +171,29 @@ class DaggerReflectAnalysisHandler(private val outputDir: File, private val icOu
         val compiledFilePath: String
     )
 
+    private fun ClassDescriptor.reportIfClass(trace: BindingTrace): Boolean {
+        return if (kind != ClassKind.INTERFACE) {
+            trace.reportClass(this) {
+                CLASS_SHOULD_BE_INTERFACE.on(it.getClassOrInterfaceKeyword()!!)
+            }
+            true
+        } else {
+            false
+        }
+    }
+
+    private fun BindingTrace.reportClass(descriptor: ClassDescriptor, diagnosticFactory: (KtClass) -> Diagnostic) {
+        (descriptor.findPsi() as? KtClass)?.let {
+            reportFromPlugin(
+                diagnosticFactory(it),
+                DaggerReflectErrors
+            )
+        }
+    }
+
     companion object {
-        val COMPONENT_FQ_NAME = FqName(dagger.Component::class.qualifiedName!!)
-        val COMPONENT_FACTORY_FQ_NAME = FqName(dagger.Component.Factory::class.qualifiedName!!)
-        val COMPONENT_BUILDER_FQ_NAME = FqName(dagger.Component.Builder::class.qualifiedName!!)
+        private val COMPONENT_FQ_NAME = FqName(dagger.Component::class.qualifiedName!!)
+        private val COMPONENT_FACTORY_FQ_NAME = FqName(dagger.Component.Factory::class.qualifiedName!!)
+        private val COMPONENT_BUILDER_FQ_NAME = FqName(dagger.Component.Builder::class.qualifiedName!!)
     }
 }
