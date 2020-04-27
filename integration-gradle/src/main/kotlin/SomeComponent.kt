@@ -1,7 +1,7 @@
 import dagger.Component
 
 @Component
-interface SomeComponent1 : TestInterface {
+interface SomeComponent : TestInterface {
     fun test(): Long
 
     @Component
@@ -16,6 +16,6 @@ interface SomeComponent1 : TestInterface {
 
     @Component.Factory
     interface Factor {
-        fun factory(): SomeComponent1
+        fun factory(): SomeComponent
     }
 }
