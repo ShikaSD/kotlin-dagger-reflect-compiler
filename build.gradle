@@ -3,7 +3,7 @@ buildscript {
         mavenLocal()
     }
     ext.versions = [
-        'dagger': '2.25.2'
+        'dagger': '2.27'
     ]
 
     ext.deps = [
@@ -31,7 +31,7 @@ plugins {
 }
 
 group 'me.shika'
-version '0.0.1-SNAPSHOT-8'
+version '1.0.1-SNAPSHOT'
 
 allprojects {
     group = rootProject.getGroup()
