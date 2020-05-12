@@ -75,7 +75,7 @@ class DaggerReflectCompilerSubplugin : KotlinGradleSubplugin<KotlinCompile> {
         DaggerReflectCLProcessor.PLUGIN_ID
 
     override fun getPluginArtifact(): SubpluginArtifact =
-        SubpluginArtifact("me.shika", "dagger-reflect-compiler-plugin", "0.0.1-SNAPSHOT-6")
+        SubpluginArtifact("me.shika", "dagger-reflect-compiler-plugin", "1.0.1-SNAPSHOT")
 
     override fun isApplicable(project: Project, task: AbstractCompile): Boolean =
         project.isPluginEnabled && task is AbstractKotlinCompile<*> && task !is KaptGenerateStubsTask

@@ -1,11 +1,12 @@
 buildscript {
     repositories {
         mavenCentral()
+        maven { url "https://plugins.gradle.org/m2/" }
         mavenLocal()
     }
 
     dependencies {
-        classpath 'me.shika:dagger-reflect-compiler-plugin:0.0.1-SNAPSHOT-8'
+        classpath 'me.shika:dagger-reflect-compiler-plugin:1.0.1-SNAPSHOT'
     }
 }
 
