@@ -31,7 +31,7 @@ plugins {
 }
 
 group 'me.shika'
-version '0.0.1-SNAPSHOT-6'
+version '0.0.1-SNAPSHOT-8'
 
 allprojects {
     group = rootProject.getGroup()

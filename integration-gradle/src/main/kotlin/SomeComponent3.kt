@@ -2,9 +2,13 @@ import dagger.Component
 import dagger.Module
 
 @Component(modules = [SomeModule::class], dependencies = [TestInterface::class])
-interface omeComponent3 {
+interface SomeComponent3 {
     fun test(): Long
 }
 
 @Module
-class SomeModule
+class SomeModule {
+    init {
+        DaggerSomeComponent3.builder()
+    }
+}

@@ -94,7 +94,7 @@ class DaggerReflectAnalysisHandler(private val outputDir: File, private val icOu
             )
         }
 
-        project.clearCachedOutputFiles(files)
+        project.clearCachedOutputFiles(files, newFiles)
 
         val output = (entries.filter { it.compiledFilePath !in toDelete } + newFiles).toSet()
         manifest.createNewFile()
@@ -109,16 +109,20 @@ class DaggerReflectAnalysisHandler(private val outputDir: File, private val icOu
 
         generated = true
 
-        return if (bindingTrace.bindingContext.diagnostics.any { it.severity == Severity.ERROR }) {
-            AnalysisResult.compilationError(bindingTrace.bindingContext)
-        } else {
-            AnalysisResult.RetryWithAdditionalRoots(
-                bindingContext = bindingTrace.bindingContext,
-                moduleDescriptor = module,
-                additionalKotlinRoots = newFiles.map { File(it.compiledFilePath) }.toList(),
-                additionalJavaRoots = emptyList(),
-                addToEnvironment = true
-            )
+        return when {
+            bindingTrace.bindingContext.diagnostics.any { it.severity == Severity.ERROR } -> {
+                AnalysisResult.compilationError(bindingTrace.bindingContext)
+            }
+            newFiles.isEmpty() -> null
+            else -> {
+                AnalysisResult.RetryWithAdditionalRoots(
+                    bindingContext = bindingTrace.bindingContext,
+                    moduleDescriptor = module,
+                    additionalKotlinRoots = newFiles.map { File(it.compiledFilePath) }.toList(),
+                    additionalJavaRoots = emptyList(),
+                    addToEnvironment = true
+                )
+            }
         }
     }
 
@@ -152,9 +156,9 @@ class DaggerReflectAnalysisHandler(private val outputDir: File, private val icOu
         return renderer.generateDefaultBuilder()
     }
 
-    private fun Project.clearCachedOutputFiles(files: MutableCollection<KtFile>) {
+    private fun Project.clearCachedOutputFiles(files: MutableCollection<KtFile>, newFiles: Set<ICEntry>) {
         files.removeIf { file ->
-            file.virtualFilePath.startsWith(outputDir.absolutePath).also { removed ->
+            newFiles.any { it.compiledFilePath == file.virtualFilePath }.also { removed ->
                 if (removed) {
                     dropFileCaches(file)
                 }
