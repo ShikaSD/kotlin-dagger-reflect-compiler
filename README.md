@@ -4,7 +4,7 @@ Adds kapt-like code generation of dagger-reflect code with a compiler plugin.
 
 Instructions to get the latest version [here](https://plugins.gradle.org/plugin/me.shika.dagger-reflect-compiler-plugin).
 
-You also have to add this *to each project your apply it on*:
+You also have to add this to **each module it is applied on**:
 ```groovy
 buildscript {
     repositories {
