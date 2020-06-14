@@ -2,24 +2,20 @@ package me.shika.dagger.reflect.resolver
 
 import me.shika.dagger.reflect.CLASS_SHOULD_BE_INTERFACE
 import me.shika.dagger.reflect.DaggerReflectErrors
-import me.shika.dagger.reflect.ic.ICManifest
+import me.shika.dagger.reflect.ic.ICCache
 import me.shika.dagger.reflect.renderer.DaggerReflectRenderer
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.com.intellij.openapi.project.Project
-import org.jetbrains.kotlin.com.intellij.psi.PsiManager
-import org.jetbrains.kotlin.com.intellij.psi.impl.PsiManagerImpl
 import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.container.get
 import org.jetbrains.kotlin.context.ProjectContext
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
-import org.jetbrains.kotlin.descriptors.findClassAcrossModuleDependencies
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.diagnostics.Severity
 import org.jetbrains.kotlin.diagnostics.reportFromPlugin
 import org.jetbrains.kotlin.js.resolve.diagnostics.findPsi
-import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtFile
@@ -31,7 +27,6 @@ import org.jetbrains.kotlin.resolve.lazy.ResolveSession
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter.Companion.CLASSIFIERS
 import org.jetbrains.kotlin.util.prefixIfNot
 import java.io.File
-import java.io.FileOutputStream
 
 class DaggerReflectAnalysisHandler(
     private val outputDir: File,
@@ -52,7 +47,7 @@ class DaggerReflectAnalysisHandler(
         }
 
         outputDir.mkdirs()
-        val icManifest = ICManifest(project, module, icManifestOutputDir)
+        val icManifest = ICCache(project, module, icManifestOutputDir)
 
         val resolveSession = componentProvider.get<ResolveSession>()
 

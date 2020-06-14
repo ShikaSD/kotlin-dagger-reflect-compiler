@@ -12,7 +12,7 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.classId
 import java.io.File
 import java.io.FileOutputStream
 
-data class ICManifest(
+data class ICCache(
     private val project: Project,
     private val module: ModuleDescriptor,
     private val manifestDir: File?
@@ -67,7 +67,10 @@ data class ICManifest(
             it.flush()
         }
 
-        return entries.map { File(it.compiledFilePath) }.distinct()
+        return newFiles
+            .filter { it !in entries }
+            .map { File(it.compiledFilePath) }
+            .distinct()
     }
 
     private fun Project.clearCachedOutputFiles(files: MutableCollection<KtFile>, newFiles: Set<ICEntry>) {

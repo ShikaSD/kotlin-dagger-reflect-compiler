@@ -6,7 +6,6 @@ dependencies {
     implementation deps.kotlin.stdlib
     implementation deps.dagger.runtime
     implementation deps.dagger.reflect
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0"
 
     kotlinCompilerPluginClasspath project(':compiler:compiler-plugin')
 }

@@ -6,7 +6,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'me.shika:dagger-reflect-compiler-plugin:1.0.1-SNAPSHOT'
+        classpath 'me.shika:dagger-reflect-compiler-plugin:1.0.2-SNAPSHOT'
     }
 }
 
