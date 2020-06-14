@@ -6,6 +6,7 @@ dependencies {
     implementation deps.kotlin.stdlib
     implementation deps.dagger.runtime
     implementation deps.dagger.reflect
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0"
 
     kotlinCompilerPluginClasspath project(':compiler:compiler-plugin')
 }
@@ -31,7 +32,10 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all { it ->
         freeCompilerArgs = [
             "-P",
             "plugin:me.shika.dagger-reflect:outputDir=${sourcesDir.getAbsolutePath()}",
-            "-Xreport-perf"
+            "-Xreport-perf",
+            "-Xuse-ir",
+            "-Xdump-directory=${buildDir}/ir/",
+            "-Xphases-to-dump-after=ValidateIrBeforeLowering"
         ]
     }
 }
