@@ -17,7 +17,7 @@ data class ICCache(
     private val module: ModuleDescriptor,
     private val manifestDir: File?
 ) {
-    private val manifestFile = File(manifestDir, "compiled-manifest.txt")
+    private val manifestFile = manifestDir?.let { File(it, "compiled-manifest.txt") }
     private val entries: Set<ICEntry> = readManifest()
 
     private val newFiles = mutableSetOf<ICEntry>()
@@ -27,7 +27,7 @@ data class ICCache(
     }
 
     private fun readManifest(): Set<ICEntry> =
-        if (manifestFile.exists()) {
+        if (manifestFile != null && manifestFile.exists()) {
             manifestFile.bufferedReader().useLines {
                 it.map { line ->
                     val chunks = line.split(":")
@@ -57,14 +57,16 @@ data class ICCache(
         project.clearCachedOutputFiles(files, newFiles)
 
         val output = (entries.filter { it.compiledFilePath !in toDelete } + newFiles).toSet()
-        manifestFile.createNewFile()
-        FileOutputStream(manifestFile, false).bufferedWriter().use {
-            output.forEach { entry ->
-                val formatted = "${entry.compiledFilePath}:${entry.classId.packageFqName.asString()}:${entry.classId.relativeClassName.asString()}"
-                it.write(formatted)
-                it.write("\n")
+        if (manifestFile != null) {
+            manifestFile.createNewFile()
+            FileOutputStream(manifestFile, false).bufferedWriter().use {
+                output.forEach { entry ->
+                    val formatted = "${entry.compiledFilePath}:${entry.classId.packageFqName.asString()}:${entry.classId.relativeClassName.asString()}"
+                    it.write(formatted)
+                    it.write("\n")
+                }
+                it.flush()
             }
-            it.flush()
         }
 
         return newFiles

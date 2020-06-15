@@ -64,7 +64,7 @@ class DaggerReflectAnalysisHandler(
 
                     val path = processDescriptor(descriptor, bindingTrace)?.prefixIfNot(File.separator)
                     if (path != null) {
-                        icManifest?.recordGeneratedFile(
+                        icManifest.recordGeneratedFile(
                             descriptor.classId!!,
                             outputDir.absolutePath + path
                         )

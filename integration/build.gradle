@@ -31,6 +31,8 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all { it ->
         freeCompilerArgs = [
             "-P",
             "plugin:me.shika.dagger-reflect:outputDir=${sourcesDir.getAbsolutePath()}",
+            "-P",
+            "plugin:me.shika.dagger-reflect:icOutputDir=${buildDir.getAbsolutePath()}",
             "-Xreport-perf",
             "-Xuse-ir",
             "-Xdump-directory=${buildDir}/ir/",
